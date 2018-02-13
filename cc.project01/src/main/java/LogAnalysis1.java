@@ -35,7 +35,7 @@ public class LogAnalysis1 {
 
             String[] logRecord = line.split(" ");
             String target = "/assets/img/home-logo.png";
-            if (logRecord[6].contains(target)) {
+            if (logRecord[6].equals(target)) {
                 word.set(logRecord[6]);
                 context.write(word, one);
             }
