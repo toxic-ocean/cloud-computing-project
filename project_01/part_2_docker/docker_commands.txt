@@ -1,0 +1,32 @@
+# build docker image based on the Dockerfile
+docker build -t hadoop .
+
+# start up the docker image in a container
+docker run --name hadoop \
+  -p 9870:9870 \
+  -p 9868:9868 \
+  -p 9864:9864 \
+  -p 50060:50060 \
+  -p 50030:50030 \
+  -p 19888:19888 \
+  -p 10033:10033 \
+  -p 8032:8032 \
+  -p 8030:8030 \
+  -p 8088:8088 \
+  -p 8033:8033 \
+  -p 8042:8042 \
+  -p 8188:8188 \
+  -p 8047:8047 \
+  -p 8788:8788 \
+  -ti hadoop
+
+
+# run the demo script
+sh ${HADOOP_HOME}/demo.sh
+
+# or manually run
+cd ${HADOOP_HOME}
+bin/hdfs dfs -mkdir /input
+bin/hdfs dfs -put testfile/* /input
+bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-3.0.0.jar wordcount /input /output
+bin/hdfs dfs -cat /output/*
