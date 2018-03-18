@@ -10,9 +10,9 @@ import org.spark_project.guava.base.Function;
 
 import scala.Tuple2;
 
-public class LogAnalysis3 {
+public class LogAnalysis2 {
     private static void analysis(String[] args) {
-        SparkConf conf = new SparkConf().setAppName("Log Analysis 03");
+        SparkConf conf = new SparkConf().setAppName("Log Analysis 02");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
         String file = "hdfs:///user/root/data/access_log";
@@ -37,14 +37,12 @@ public class LogAnalysis3 {
 
         List<Tuple2<String, Integer>> output = counts.collect();
 
-        Tuple2<String, Integer> maxTuple = new Tuple2<String, Integer>("", 0);
-        for (Tuple2<String, Integer> t : output) {
-            if (maxTuple._2 < t._2()) {
-                maxTuple = t;
+        System.out.println("----------------OUTPUT START----------------");
+        for (Tuple2<?, ?> t : output) {
+            if (t._1().equals("/assets/js/lightbox.js")) {
+                System.out.println(t._1() + "\t" + t._2());
             }
         }
-        System.out.println("----------------OUTPUT START----------------");
-        System.out.println(maxTuple._1() + "\t" + maxTuple._2());
         System.out.println("----------------OUTPUT END----------------");
         sc.close();
 

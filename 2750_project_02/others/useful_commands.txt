@@ -1,0 +1,31 @@
+cd /usr/local/
+wget http://mirrors.gigenet.com/apache/spark/spark-2.3.0/spark-2.3.0-bin-hadoop2.7.tgz
+tar -xzf spark-2.3.0-bin-hadoop2.7.tgz
+ln -s spark-2.3.0-bin-hadoop2.7/ spark
+
+
+export YARN_CONF_DIR=/usr/local/hadoop/etc/hadoop
+export SPARK_HOME=/usr/local/spark
+export LD_LIBRARY_PATH=/usr/local/hadoop/lib/native:$LD_LIBRARY_PATH
+
+
+
+
+./bin/spark-submit --class org.apache.spark.examples.SparkPi \
+    --deploy-mode cluster \
+    --executor-cores 1 \
+    examples/jars/spark-examples*.jar \
+    10
+
+
+    <property>
+        <name>yarn.log-aggregation-enable</name>
+        <value>true</value>
+    </property>
+
+
+$SPARK_HOME/bin/spark-submit --class LogAnalysisCache --deploy-mode cluster ~/mini-project-02-1.0.jar
+
+bin/yarn logs -log_files stdout -applicationId application_1520778312620_0010
+
+
