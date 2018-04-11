@@ -1,2 +1,4 @@
-# mapreduce
-hadoop set up and mapreduce implementation
+### Cloud Computing Mini Projects
+- Docker, Hadoop, MapReduce
+- Spark
+- Cassandra
