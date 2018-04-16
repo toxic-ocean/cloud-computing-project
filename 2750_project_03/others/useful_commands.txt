@@ -1,0 +1,37 @@
+cassandra -Rf
+nodetool status
+cqlsh master
+
+CREATE OR REPLACE FUNCTION project_03.maxI(current int, candidate int)
+CALLED ON NULL INPUT
+RETURNS int LANGUAGE java AS
+'if (current == null) {return candidate;} else {return Math.max(current, candidate);}' ;
+
+CREATE OR REPLACE FUNCTION project_03.state_group_and_count( state map<text, int>, type text )
+CALLED ON NULL INPUT
+RETURNS map<text, int>
+LANGUAGE java AS '
+Integer count = (Integer) state.get(type);  if (count == null) count = 1; else count++; state.put(type, count); return state; ' ;
+
+CREATE OR REPLACE FUNCTION project_03.state_group_and_total( state map<text, int>, type text, amount int )
+CALLED ON NULL INPUT
+RETURNS map<text, int>
+LANGUAGE java AS '
+Integer count = (Integer) state.get(type);  if (count == null) count = amount; else count = count + amount; state.put(type, count); return state; ' ;
+
+use project_03;
+
+CREATE OR REPLACE AGGREGATE group_and_total(text, int) 
+SFUNC state_group_and_total 
+STYPE map<text, int> 
+INITCOND {};
+
+CREATE OR REPLACE AGGREGATE group_and_count(text) 
+SFUNC state_group_and_count 
+STYPE map<text, int> 
+INITCOND {};
+
+CREATE OR REPLACE AGGREGATE maxAgg(int)
+SFUNC maxI
+STYPE int
+INITCOND null;
