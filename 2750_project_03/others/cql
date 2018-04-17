@@ -1,0 +1,51 @@
+CREATE OR REPLACE FUNCTION state_group_and_count( state map<text, int>, type text )
+CALLED ON NULL INPUT
+RETURNS map<text, int>
+LANGUAGE java 
+AS $$
+Integer count = (Integer) state.get(type);  if (count == null) count = 1; else count++; state.put(type, count); return state;
+$$ ;
+
+CREATE OR REPLACE AGGREGATE qqq(text) 
+SFUNC state_group_and_count 
+STYPE map<text, int> 
+FINALFUNC final_group_and_count
+INITCOND {};
+
+
+CREATE TABLE keyvalue(id int primary key, key text, count counter );
+INSERT INTO keyvalue (id, key, value ) VALUES (1, 'chris', 5);
+INSERT INTO keyvalue (id, key, value ) VALUES (2, 'luke', 10);
+INSERT INTO keyvalue (id, key, value ) VALUES (3, 'luke', 15);
+INSERT INTO keyvalue (id, key, value ) VALUES (4, 'luke', 20);
+
+
+
+CREATE MATERIALIZED VIEW key_count AS
+    select * from keyvalue
+    where key is not null
+    PRIMARY KEY (id, key);
+
+
+CREATE TABLE log (id int PRIMARY KEY, ip text, identity text, username text, time text, method text, path text, protocol text, status int, size int); 
+
+
+
+
+CREATE OR REPLACE FUNCTION final_group_and_count( state map<text, int> )
+CALLED ON NULL INPUT 
+RETURNS tuple<text, int> 
+LANGUAGE java 
+AS $$
+  int max = Integer.MIN_VALUE;
+  String maxKey = "";
+  for (String key : state.keySet()) {
+    if (state.get(key) > max) {
+      maxKey = key;
+      max = state.get(key);
+    }
+  }
+  TupleType tupleType = cluster.getMetadata().newTupleType(DataType.text(), DataType.cint());
+  TupleValue tuple = tupleType.newValue().setString(0, maxKey).setInt(1, max);
+  return tuple ;
+$$;

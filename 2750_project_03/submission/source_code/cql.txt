@@ -1,0 +1,113 @@
+# drop existing data
+DROP TABLE IF EXISTS project_03.log; 
+DROP TABLE IF EXISTS project_03.ip; 
+DROP TABLE IF EXISTS project_03.path; 
+DROP KEYSPACE IF EXISTS project_03;
+
+
+# create keyspace
+CREATE KEYSPACE project_03 WITH replication = { 'class': 'SimpleStrategy', 'replication_factor' : 2};
+
+
+# create log table and index on columns ip and path 
+CREATE TABLE project_03.log (
+	id int,
+	ip text,
+	identity text,
+	username text,
+	time text,
+	method text,
+	path text,
+	protocol text,
+	status int,
+	size int,
+	PRIMARY KEY ((id), ip, path));
+
+CREATE INDEX ip_index ON project_03.log (ip); 
+
+CREATE INDEX path_index ON project_03.log (path);
+
+
+# create counter table for ip and path
+CREATE TABLE project_03.ip (ip text PRIMARY KEY, count counter); 
+
+CREATE TABLE project_03.path (path text PRIMARY KEY, count counter);
+
+
+# create UDF for retrieving max group count on ip and path columns directly from log table 
+CREATE FUNCTION project_03.state_group_and_count(state map<text, int>, type text)
+	CALLED ON NULL INPUT 
+	RETURNS map<text, int> 
+	LANGUAGE java
+	AS $$
+		Integer count = (Integer) state.get(type); 
+		if (count == null)
+			count = 1; 
+		else
+			count++;
+		state.put(type, count);
+		return state; 
+	$$;
+
+CREATE FUNCTION project_03.ccmapmax(input map<text, int>) 
+	RETURNS NULL ON NULL INPUT
+	RETURNS map<text, int>
+	LANGUAGE java
+	AS $$
+		Integer max = Integer.MIN_VALUE; 
+		String data="";
+		for (String k : input.keySet()) {
+			Integer tmp = input.get(k);
+			if (tmp > max) { max = tmp; data = k; } 
+		}
+		Map<String,Integer> mm = new HashMap<String,Integer>(); 
+		mm.put(data,max);
+		return mm;
+	$$;
+
+CREATE OR REPLACE AGGREGATE group_and_count_q34(text) 
+	SFUNC state_group_and_count
+	STYPE map<text, int>
+	FINALFUNC ccmapmax
+	INITCOND {};
+
+
+# insert data
+INSERT INTO project_03.log 
+	(id, ip, identity, username, time, method, path, protocol, status, size)
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+UPDATE project_03.ip SET count = count + 1 WHERE ip = ?;
+
+UPDATE project_03.path SET count = count + 1 WHERE path = ?;
+
+
+# solutions from part 3
+# problem 1
+SELECT count(*) 
+	FROM project_03.log 
+	WHERE path='/assets/img/release-schedule-logo.png'
+	ALLOW FILTERING;
+
+# problem 2
+SELECT count(*) 
+	FROM project_03.log 
+	WHERE ip='10.207.188.188' 
+	ALLOW FILTERING;
+
+# problem 3
+SELECT * FROM project_03.path;
+
+SELECT max(count) FROM path;
+SELECT * FROM path WHERE count = 117348 ALLOW FILTERING ;
+
+SELECT group_and_count_q34(path) FROM log;
+
+# problem 4
+SELECT * FROM project_03.ip;
+
+SELECT max(count) FROM ip;
+SELECT * FROM ip WHERE count = 158614 ALLOW FILTERING ;
+
+SELECT group_and_count_q34(ip) FROM log;
+
