@@ -17,20 +17,20 @@ public class LogAnalysis3 {
     public void pathHits() {
         Cluster cluster = null;
         try {
-            cluster = Cluster.builder().addContactPoint("master").addContactPoint("slave").build();
+            cluster = Cluster.builder().addContactPoint("159.89.43.89").build();
             Session session = cluster.connect();
 
-            ResultSet resultSet = session.execute("SELECT * from project_03.ip;");
-            String ip = "";
+            ResultSet resultSet = session.execute("SELECT * from project_03.path;");
+            String path = "";
             long count = 0;
             for (Row row : resultSet) {
                 long rowCount = row.getLong("count");
                 if (rowCount > count) {
                     count = rowCount;
-                    ip = row.getString("ip");
+                    path = row.getString("path");
                 }
             }
-            System.out.println(ip + " " + count);
+            System.out.println(path + " " + count);
 
         } finally {
             if (cluster != null)

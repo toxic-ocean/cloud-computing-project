@@ -16,7 +16,7 @@ public class LogAnalysis1 {
     public void pathHits() {
         Cluster cluster = null;
         try {
-            cluster = Cluster.builder().addContactPoint("master").addContactPoint("slave").build();
+            cluster = Cluster.builder().addContactPoint("159.89.43.89").build();
             Session session = cluster.connect();
 
             ResultSet resultSet = session.execute("select count(*) from project_03.log where path='/assets/img/release-schedule-logo.png' ALLOW FILTERING;");

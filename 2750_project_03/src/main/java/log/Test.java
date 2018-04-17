@@ -23,15 +23,15 @@ public class Test {
             int pathCount = 0;
             while (br.ready()) {
                 String line = br.readLine();
-                // Pattern pattern = Pattern.compile("([^ ]*) ([^ ]*) ([^ ]*) \\[(.*)\\] \"([^ ]*) ([^ ]*) ([^ ]*)\" ([^ ]*) ([^ ]*)");
-                Pattern pattern = Pattern.compile("([^ ]*).*\"\\w+ ([^ ]*)");
+                Pattern pattern = Pattern.compile("([^ ]*) ([^ ]*) (.*) \\[(.*)\\] \"([^ ]*) ([^ ]*) *([^ ]*)\" ([^ ]*) ([^ ]*)");
+                // Pattern pattern = Pattern.compile("([^ ]*).*\"\\w+ ([^ ]*)");
                 Matcher matcher = pattern.matcher(line);
                 if (matcher.find()) {
                     String ip = matcher.group(1);
                     if (ip.equals("")) {
                         System.out.println(line);
                     }
-                    String path = matcher.group(2);
+                    String path = matcher.group(6);
                     if (path.equals("")) {
                         System.out.println(line);
                     }
